@@ -5,6 +5,7 @@
 (scroll-bar-mode -1)
 ; (load-theme 'modus-vivendi t)
 (setq use-dialog-box nil)
+(set-face-attribute 'default nil :font "Jetbrains Mono Nerd Font" :height 100)
 
 ; behaviour settings
 (setq custom-file (locate-user-emacs-file "custom_vars.el"))
@@ -38,6 +39,7 @@
   :init
   (setq base16-theme-distinct-fringe-background nil)
   (setq base16-theme-highlight-mode-line 'box)
+  (setq base16-theme-256-color-source 'colors)
   :config
   (load-theme 'base16-gruvbox-material-dark-hard t))
 
@@ -70,6 +72,7 @@
          :map minibuffer-local-map
          ("C-r" . 'counsel-minibuffer-history)))
 
+
 (use-package evil
   :init
   (setq evil-want-integration t)
@@ -80,9 +83,9 @@
   (evil-mode 1)
   (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
   (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
-  (evil-define-key* 'motion 'global
-       ";" #'evil-ex
-       ":" #'evil-repeat-find-char) 
+  ;; (evil-define-key* 'motion 'global
+  ;;      ";" #'evil-ex
+  ;;      ":" #'evil-repeat-find-char) 
   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
   (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
 
@@ -102,4 +105,27 @@
       :global-prefix "C-c"))
 
 (myconfig/leader-keys 'normal 'override
+  "x" 'counsel-M-x
+  "b" 'eval-buffer
   "/" 'swiper)
+
+
+(defun myconfig/org-mode-setup ()
+  (org-indent-mode)
+  ;; (variable-pitch-mode 1)
+  (auto-fill-mode 0)
+  (visual-line-mode 1)
+  (setq evil-auto-indent nil))
+
+(require 'org-indent)
+(use-package org
+  :hook (org-mode . myconfig/org-mode-setup))
+
+;; Set the cursor color based on the evil state
+(defvar myconfig/base16-colors base16-gruvbox-material-dark-hard-theme-colors)
+(setq evil-emacs-state-cursor   `(,(plist-get myconfig/base16-colors :base0D) box)
+      evil-insert-state-cursor  `(,(plist-get myconfig/base16-colors :base0D) bar)
+      evil-motion-state-cursor  `(,(plist-get myconfig/base16-colors :base0E) box)
+      evil-normal-state-cursor  `(,(plist-get myconfig/base16-colors :base0B) box)
+      evil-replace-state-cursor `(,(plist-get myconfig/base16-colors :base08) bar)
+      evil-visual-state-cursor  `(,(plist-get myconfig/base16-colors :base09) box))

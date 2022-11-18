@@ -1,0 +1,4 @@
+#+TITLE: Emacs Configuration
+#+AUTHOR: Alexander Neville
+
+Emacs, more specifically GNU/Emacs, is a peice of free software providing a text-oriented user interface and Emacs Lisp interpreter. Emacs includes many functions which make it a capable text editor. I use it primarily for the special major modes it provides, namely Org, Magit and Dired.
