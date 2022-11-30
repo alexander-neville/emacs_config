@@ -5,13 +5,23 @@
 (scroll-bar-mode -1)
 ; (load-theme 'modus-vivendi t)
 (setq use-dialog-box nil)
-(set-face-attribute 'default nil :font "Jetbrains Mono Nerd Font" :height 100)
+; (set-face-attribute 'default nil :font "Jetbrains Mono Nerd Font" :height 100)
+
+(custom-theme-set-faces
+ 'user
+ '(variable-pitch ((t (:family "Roboto" :height 100))))
+ '(default ((t ( :family "Jetbrains Mono Nerd Font" :height 100))))
+ '(fixed-pitch ((t ( :family "Jetbrains Mono Nerd Font" :height 100)))))
 
 ; behaviour settings
+(setq scroll-conservatively 1000) ; a big number
+(setq backup-inhibited t)
+(setq auto-save-default nil)
 (setq custom-file (locate-user-emacs-file "custom_vars.el"))
 (load custom-file 'noerror 'nomessage)
 (global-auto-revert-mode 1)
 (setq global-auto-revert-non-file-buffers t)
+(setq x-select-enable-clipboard nil)
 
 ; keybindings
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
@@ -38,10 +48,35 @@
   :demand
   :init
   (setq base16-theme-distinct-fringe-background nil)
-  (setq base16-theme-highlight-mode-line 'box)
-  (setq base16-theme-256-color-source 'colors)
+  (setq base16-theme-highlight-mode-line 'contrast)
+  (setq base16-theme-256-color-source 'colors))
+  ; :config
+  ; (load-theme 'base16-gruvbox-material-dark-hard t)
+  ;; Set the cursor color based on the evil state
+  ; (defvar myconfig/base16-colors base16-gruvbox-material-dark-hard-theme-colors)
+  ; (setq evil-emacs-state-cursor   `(,(plist-get myconfig/base16-colors :base0D) box)
+  ;       evil-insert-state-cursor  `(,(plist-get myconfig/base16-colors :base0D) bar)
+  ;       evil-motion-state-cursor  `(,(plist-get myconfig/base16-colors :base0E) box)
+  ;       evil-normal-state-cursor  `(,(plist-get myconfig/base16-colors :base0B) box)
+  ;       evil-replace-state-cursor `(,(plist-get myconfig/base16-colors :base08) bar)
+  ;       evil-visual-state-cursor  `(,(plist-get myconfig/base16-colors :base09) box)))
+
+(use-package doom-themes
+  :ensure t
   :config
-  (load-theme 'base16-gruvbox-material-dark-hard t))
+  (setq doom-themes-enable-bold t
+        doom-themes-enable-italic t)
+  (doom-themes-org-config)
+  (load-theme 'doom-one t))
+
+(use-package all-the-icons
+  :ensure t)
+
+(use-package doom-modeline
+  :ensure t
+  :hook (after-init . doom-modeline-mode)
+  :config
+  (setq doom-modeline-height 50))
 
 (use-package ivy
   :diminish
@@ -107,25 +142,63 @@
 (myconfig/leader-keys 'normal 'override
   "x" 'counsel-M-x
   "b" 'eval-buffer
+  "d" 'dired
+  "p" 'clipboard-yank
+  "y" 'clipboard-kill-ring-save
+  "e" 'dired
+  "sb" 'counsel-switch-buffer
+  "ss" 'swiper
+  "st" 'counsel-load-theme
   "/" 'swiper)
 
 
 (defun myconfig/org-mode-setup ()
   (org-indent-mode)
-  ;; (variable-pitch-mode 1)
+  (variable-pitch-mode 1)
   (auto-fill-mode 0)
   (visual-line-mode 1)
-  (setq evil-auto-indent nil))
+  (setq org-hide-emphasis-markers t
+	org-list-allow-alphabetical t
+	org-catch-invisible-edits 'smart
+	org-export-with-sub-superscripts '{}
+        evil-auto-indent nil))
 
 (require 'org-indent)
 (use-package org
   :hook (org-mode . myconfig/org-mode-setup))
 
-;; Set the cursor color based on the evil state
-(defvar myconfig/base16-colors base16-gruvbox-material-dark-hard-theme-colors)
-(setq evil-emacs-state-cursor   `(,(plist-get myconfig/base16-colors :base0D) box)
-      evil-insert-state-cursor  `(,(plist-get myconfig/base16-colors :base0D) bar)
-      evil-motion-state-cursor  `(,(plist-get myconfig/base16-colors :base0E) box)
-      evil-normal-state-cursor  `(,(plist-get myconfig/base16-colors :base0B) box)
-      evil-replace-state-cursor `(,(plist-get myconfig/base16-colors :base08) bar)
-      evil-visual-state-cursor  `(,(plist-get myconfig/base16-colors :base09) box))
+(font-lock-add-keywords 'org-mode
+                        '(("^ *\\([-]\\) "
+                          (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+
+(use-package org-bullets
+  :after org
+  :hook (org-mode . org-bullets-mode)
+  :custom
+  (org-bullets-bullet-list '("●" "○" "○" "○" "●" "○" "●")))
+
+(use-package org-appear
+  :hook (org-mode . org-appear-mode)
+  :config
+  (setq org-appear-autoemphasis t
+        org-appear-autosubmarkers t
+        org-appear-autolinks nil))
+  ;; for proper first-time setup, `org-appear--set-elements'
+  ;; needs to be run after other hooks have acted.
+
+(set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
+(set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
+(set-face-attribute 'org-indent nil :inherit '(org-hide fixed-pitch))
+(set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+(set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+(set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+(set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)
+
+(use-package visual-fill-column
+  :config
+  (setq-default visual-fill-column-center-text t)
+  (setq-default visual-fill-column-width 100))
+
+
+(add-hook 'visual-line-mode-hook #'visual-fill-column-mode)
+(put 'dired-find-alternate-file 'disabled nil)
