@@ -1,5 +1,9 @@
 ; interface settings
+(setq inhibit-startup-echo-area-message t)
 (setq inhibit-startup-message t)
+;; (defun display-startup-echo-area-message ()
+;; (message ""))
+(defun display-startup-echo-area-message () )
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
@@ -78,6 +82,20 @@
   :config
   (setq doom-modeline-height 50))
 
+(use-package dashboard
+  :ensure t
+  :init
+  (setq dashboard-set-footer nil)
+  (setq dashboard-set-heading-icons t)
+  (setq dashboard-set-file-icons t)
+  (setq dashboard-banner-logo-title "www.gnu.org")
+  (setq dashboard-startup-banner 'official)
+  (setq dashboard-startup-banner 'logo)
+  (setq dashboard-center-content t)
+  (setq dashboard-items '())
+  :config
+  (dashboard-setup-startup-hook))
+
 (use-package ivy
   :diminish
   :bind (("C-s" . swiper)
@@ -141,11 +159,12 @@
 
 (myconfig/leader-keys 'normal 'override
   "x" 'counsel-M-x
-  "b" 'eval-buffer
+  "bb" 'counsel-switch-buffer
+  "ff" 'counsel-find-file
   "d" 'dired
   "p" 'clipboard-yank
   "y" 'clipboard-kill-ring-save
-  "e" 'dired
+  "e" 'eval-buffer
   "sb" 'counsel-switch-buffer
   "ss" 'swiper
   "st" 'counsel-load-theme
@@ -171,6 +190,16 @@
                         '(("^ *\\([-]\\) "
                           (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
 
+(dolist (face '((org-level-1 . 1.3)
+                (org-level-2 . 1.2)
+                (org-level-3 . 1.1)
+                (org-level-4 . 1.1)
+                (org-level-5 . 1.1)
+                (org-level-6 . 1.1)
+                (org-level-7 . 1.1)
+                (org-level-8 . 1.1)))
+    (set-face-attribute (car face) nil :font "Roboto" :weight 'bold :height (cdr face)))
+
 (use-package org-bullets
   :after org
   :hook (org-mode . org-bullets-mode)
@@ -189,6 +218,7 @@
 (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
 (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
 (set-face-attribute 'org-indent nil :inherit '(org-hide fixed-pitch))
+(set-face-attribute 'org-document-info-keyword nil :inherit '(shadow fixed-pitch))
 (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
 (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
 (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
