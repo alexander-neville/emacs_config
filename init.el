@@ -7,15 +7,37 @@
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
-; (load-theme 'modus-vivendi t)
 (setq use-dialog-box nil)
-; (set-face-attribute 'default nil :font "Jetbrains Mono Nerd Font" :height 100)
+(add-hook 'prog-mode-hook 'display-line-numbers-mode)
+(add-hook 'prog-mode-hook 'hl-line-mode)
+(add-to-list 'load-path (concat user-emacs-directory "elisp/"))
+;; (require 'splash-screen)
 
+; font and theme
 (custom-theme-set-faces
  'user
- '(variable-pitch ((t (:family "Roboto" :height 100))))
- '(default ((t ( :family "Jetbrains Mono Nerd Font" :height 100))))
- '(fixed-pitch ((t ( :family "Jetbrains Mono Nerd Font" :height 100)))))
+ '(variable-pitch ((t (:family "ETBookOT" :height 110))))
+ '(default ((t ( :family "Iosevka Nerd Font" :height 90))))
+ '(fixed-pitch ((t ( :family "Iosevka Nerd Font" :height 90)))))
+
+;; (setq modus-themes-mode-line '(accented))
+;; (setq modus-themes-region '(accented bg-only))
+;; (setq modus-themes-completions '(opinionated))
+;; (setq modus-themes-bold-constructs t)
+;; (setq modus-themes-italic-constructs t)
+;; (setq modus-themes-paren-match '(bold underline))
+;; (setq modus-themes-syntax '(faint))
+;; (setq modus-themes-subtle-line-numbers t)
+;; (setq modus-themes-org-blocks 'gray-background)
+;; (setq modus-themes-scale-headings t)
+;; (setq modus-themes-headings '(
+;; 			      (1. (rainbow bold 1.5))
+;; 			      (2. (rainbow bold 1.4))
+;; 			      (3. (rainbow bold 1.3))
+;; 			      (4. (rainbow bold 1.2))
+;; 			      (5. (rainbow bold 1.1))
+;; 			      (t. (rainbow 1.1))))
+;; (load-theme 'modus-operandi t)
 
 ; behaviour settings
 (setq scroll-conservatively 1000) ; a big number
@@ -27,8 +49,6 @@
 (setq global-auto-revert-non-file-buffers t)
 (setq x-select-enable-clipboard nil)
 
-; keybindings
-(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
 ; package repository initialisation
 (require 'package)
@@ -69,9 +89,13 @@
   :ensure t
   :config
   (setq doom-themes-enable-bold t
-        doom-themes-enable-italic t)
-  (doom-themes-org-config)
-  (load-theme 'doom-one t))
+        doom-themes-enable-italic t))
+;  (doom-themes-org-config)
+;  (load-theme 'doom-one t))
+
+(use-package spacemacs-common
+    :ensure spacemacs-theme
+    :config (load-theme 'spacemacs-light t))
 
 (use-package all-the-icons
   :ensure t)
@@ -89,12 +113,15 @@
   (setq dashboard-set-heading-icons t)
   (setq dashboard-set-file-icons t)
   (setq dashboard-banner-logo-title "www.gnu.org")
-  (setq dashboard-startup-banner 'official)
+  ;; (setq dashboard-startup-banner 'official)
   (setq dashboard-startup-banner 'logo)
   (setq dashboard-center-content t)
   (setq dashboard-items '())
   :config
   (dashboard-setup-startup-hook))
+
+; keybindings
+(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
 (use-package ivy
   :diminish
@@ -198,13 +225,13 @@
                 (org-level-6 . 1.1)
                 (org-level-7 . 1.1)
                 (org-level-8 . 1.1)))
-    (set-face-attribute (car face) nil :font "Roboto" :weight 'bold :height (cdr face)))
+    (set-face-attribute (car face) nil :font "ETBookOT" :weight 'bold :height (cdr face)))
 
 (use-package org-bullets
   :after org
   :hook (org-mode . org-bullets-mode)
   :custom
-  (org-bullets-bullet-list '("●" "○" "○" "○" "●" "○" "●")))
+  (org-bullets-bullet-list '("●" "○" "●" "○" "●" "○" "●")))
 
 (use-package org-appear
   :hook (org-mode . org-appear-mode)
@@ -216,6 +243,8 @@
   ;; needs to be run after other hooks have acted.
 
 (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
+(set-face-attribute 'org-block-begin-line nil :foreground nil :inherit 'fixed-pitch)
+(set-face-attribute 'org-block-end-line nil :foreground nil :inherit 'fixed-pitch)
 (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
 (set-face-attribute 'org-indent nil :inherit '(org-hide fixed-pitch))
 (set-face-attribute 'org-document-info-keyword nil :inherit '(shadow fixed-pitch))
