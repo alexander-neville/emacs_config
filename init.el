@@ -11,12 +11,19 @@
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 (add-hook 'prog-mode-hook 'hl-line-mode)
 (add-to-list 'load-path (concat user-emacs-directory "elisp/"))
+;; (setq initial-frame-alist (append '((minibuffer . nil)) initial-frame-alist))
+;; (setq default-frame-alist (append '((minibuffer . nil)) default-frame-alist))
+;; (setq minibuffer-auto-raise t)
+;; (setq minibuffer-exit-hook '(lambda () (lower-frame)))
 ;; (require 'splash-screen)
+(recentf-mode 1)
+(setq recentf-max-menu-items 25)
+(setq recentf-max-saved-items 25)
 
 ; font and theme
 (custom-theme-set-faces
  'user
- '(variable-pitch ((t (:family "ETBookOT" :height 110))))
+ '(variable-pitch ((t (:family "Roboto" :height 110))))
  '(default ((t ( :family "Iosevka Nerd Font" :height 90))))
  '(fixed-pitch ((t ( :family "Iosevka Nerd Font" :height 90)))))
 
@@ -48,7 +55,7 @@
 (global-auto-revert-mode 1)
 (setq global-auto-revert-non-file-buffers t)
 (setq x-select-enable-clipboard nil)
-
+(setq header-line-format " ")
 
 ; package repository initialisation
 (require 'package)
@@ -89,13 +96,13 @@
   :ensure t
   :config
   (setq doom-themes-enable-bold t
-        doom-themes-enable-italic t))
-;  (doom-themes-org-config)
-;  (load-theme 'doom-one t))
+        doom-themes-enable-italic t)
+  (doom-themes-org-config)
+  (load-theme 'doom-one t))
 
 (use-package spacemacs-common
-    :ensure spacemacs-theme
-    :config (load-theme 'spacemacs-light t))
+    :ensure spacemacs-theme)
+    ; :config (load-theme 'spacemacs-light t))
 
 (use-package all-the-icons
   :ensure t)
@@ -105,6 +112,14 @@
   :hook (after-init . doom-modeline-mode)
   :config
   (setq doom-modeline-height 50))
+
+(use-package projectile
+  :diminish projectile-mode
+  :config (projectile-mode)
+  :init
+  (when (file-directory-p "~/vcon")
+    (setq projectile-project-search-path '("~/vcon")))
+  (setq projectile-switch-project-action #'projectile-dired))
 
 (use-package dashboard
   :ensure t
@@ -116,7 +131,9 @@
   ;; (setq dashboard-startup-banner 'official)
   (setq dashboard-startup-banner 'logo)
   (setq dashboard-center-content t)
-  (setq dashboard-items '())
+  (setq dashboard-items '((recents  . 5)
+                        ; (bookmarks . 5)
+                        (projects . 5)))
   :config
   (dashboard-setup-startup-hook))
 
@@ -200,10 +217,10 @@
 
 (defun myconfig/org-mode-setup ()
   (org-indent-mode)
-  (variable-pitch-mode 1)
+  ;; (variable-pitch-mode 1)
   (auto-fill-mode 0)
   (visual-line-mode 1)
-  (setq org-hide-emphasis-markers t
+  (setq org-hide-emphasis-markers nil
 	org-list-allow-alphabetical t
 	org-catch-invisible-edits 'smart
 	org-export-with-sub-superscripts '{}
@@ -217,15 +234,16 @@
                         '(("^ *\\([-]\\) "
                           (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
 
-(dolist (face '((org-level-1 . 1.3)
-                (org-level-2 . 1.2)
-                (org-level-3 . 1.1)
-                (org-level-4 . 1.1)
+(dolist (face '((org-level-1 . 1.5)
+                (org-level-2 . 1.4)
+                (org-level-3 . 1.3)
+                (org-level-4 . 1.2)
                 (org-level-5 . 1.1)
                 (org-level-6 . 1.1)
                 (org-level-7 . 1.1)
-                (org-level-8 . 1.1)))
-    (set-face-attribute (car face) nil :font "ETBookOT" :weight 'bold :height (cdr face)))
+                (org-level-8 . 1.1)
+                (org-document-title . 1.6)))
+    (set-face-attribute (car face) nil :font "Iosevka Nerd Font" :weight 'bold :height (cdr face)))
 
 (use-package org-bullets
   :after org
@@ -233,25 +251,43 @@
   :custom
   (org-bullets-bullet-list '("●" "○" "●" "○" "●" "○" "●")))
 
-(use-package org-appear
-  :hook (org-mode . org-appear-mode)
-  :config
-  (setq org-appear-autoemphasis t
-        org-appear-autosubmarkers t
-        org-appear-autolinks nil))
+(setq
+ ispell-program-name "aspell"
+ ispell-local-dictionary "british-ise"
+ ispell-personal-dictionary "~/.config/emacs/british-ise.pws"
+)
+(defun my_config/org-ispell ()
+  "Configure `ispell-skip-region-alist' for `org-mode'."
+  (make-local-variable 'ispell-skip-region-alist)
+  (add-to-list 'ispell-skip-region-alist '(org-property-drawer-re))
+  (add-to-list 'ispell-skip-region-alist '("~" "~"))
+  (add-to-list 'ispell-skip-region-alist '("=" "="))
+  (add-to-list 'ispell-skip-region-alist '("^#\\+BEGIN_SRC" . "^#\\+END_SRC")))
+(add-hook 'org-mode-hook #'my_config/org-ispell)
+
+(setq org-highlight-latex-and-related '(latex script entities))
+
+(dolist (hook '(text-mode-hook))
+  (add-hook hook (lambda () (flyspell-mode 1))))
+;; (use-package org-appear
+;;   :hook (org-mode . org-appear-mode)
+;;   :config
+;;   (setq org-appear-autoemphasis t
+;;         org-appear-autosubmarkers t
+;;         org-appear-autolinks nil))
   ;; for proper first-time setup, `org-appear--set-elements'
   ;; needs to be run after other hooks have acted.
 
-(set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
-(set-face-attribute 'org-block-begin-line nil :foreground nil :inherit 'fixed-pitch)
-(set-face-attribute 'org-block-end-line nil :foreground nil :inherit 'fixed-pitch)
-(set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
-(set-face-attribute 'org-indent nil :inherit '(org-hide fixed-pitch))
-(set-face-attribute 'org-document-info-keyword nil :inherit '(shadow fixed-pitch))
-(set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-(set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-(set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-(set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)
+;; (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
+;; (set-face-attribute 'org-block-begin-line nil :foreground nil :inherit 'fixed-pitch)
+;; (set-face-attribute 'org-block-end-line nil :foreground nil :inherit 'fixed-pitch)
+;; (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
+;; (set-face-attribute 'org-indent nil :inherit '(org-hide fixed-pitch))
+;; (set-face-attribute 'org-document-info-keyword nil :inherit '(shadow fixed-pitch))
+;; (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+;; (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+;; (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+;; (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)
 
 (use-package visual-fill-column
   :config
@@ -260,4 +296,5 @@
 
 
 (add-hook 'visual-line-mode-hook #'visual-fill-column-mode)
+(advice-add 'text-scale-adjust :after #'visual-fill-column-adjust)
 (put 'dired-find-alternate-file 'disabled nil)
