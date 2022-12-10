@@ -1,12 +1,15 @@
-personal_ws-1.1 en 13 
+personal_ws-1.1 en 16 
+Cgroups
 DevOps
 LXC
 OCI
 Podman
 Redhat
+VM
 VMs
 chroot
 cp
+eg
 mkdir
 namespaces
 podman

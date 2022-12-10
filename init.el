@@ -11,11 +11,6 @@
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 (add-hook 'prog-mode-hook 'hl-line-mode)
 (add-to-list 'load-path (concat user-emacs-directory "elisp/"))
-;; (setq initial-frame-alist (append '((minibuffer . nil)) initial-frame-alist))
-;; (setq default-frame-alist (append '((minibuffer . nil)) default-frame-alist))
-;; (setq minibuffer-auto-raise t)
-;; (setq minibuffer-exit-hook '(lambda () (lower-frame)))
-;; (require 'splash-screen)
 (recentf-mode 1)
 (setq recentf-max-menu-items 25)
 (setq recentf-max-saved-items 25)
@@ -23,7 +18,7 @@
 ; font and theme
 (custom-theme-set-faces
  'user
- '(variable-pitch ((t (:family "Roboto" :height 110))))
+ '(variable-pitch ((t (:family "ETBookOT" :height 110))))
  '(default ((t ( :family "Iosevka Nerd Font" :height 90))))
  '(fixed-pitch ((t ( :family "Iosevka Nerd Font" :height 90)))))
 
@@ -156,6 +151,7 @@
          ("C-k" . ivy-previous-line)
          ("C-d" . ivy-reverse-i-search-kill))
   :config
+  (setq ivy-initial-inputs-alist nil)
   (ivy-mode 1))
 
 (use-package ivy-rich
@@ -202,22 +198,33 @@
       :global-prefix "C-c"))
 
 (myconfig/leader-keys 'normal 'override
-  "x" 'counsel-M-x
+  ;; switch/navigate
   "bb" 'counsel-switch-buffer
   "ff" 'counsel-find-file
+  "ss" 'swiper
+  ;; functions
   "d" 'dired
   "p" 'clipboard-yank
   "y" 'clipboard-kill-ring-save
   "e" 'eval-buffer
-  "sb" 'counsel-switch-buffer
-  "ss" 'swiper
-  "st" 'counsel-load-theme
-  "/" 'swiper)
+  "x" 'counsel-M-x
+  "i" 'ibuffer
+  "c" 'evil-delete-buffer
+  "t" 'counsel-load-theme
+  ;; org
+  "or" 'org-mode-restart
+  "op" 'org-latex-preview
+  )
 
+(use-package which-key
+  :init (which-key-mode)
+  :diminish which-key-mode)
+  ; :config
+  ; (setq which-key-idle-delay 0.1))
 
 (defun myconfig/org-mode-setup ()
   (org-indent-mode)
-  ;; (variable-pitch-mode 1)
+  (variable-pitch-mode 0)
   (auto-fill-mode 0)
   (visual-line-mode 1)
   (setq org-hide-emphasis-markers nil
@@ -245,6 +252,13 @@
                 (org-document-title . 1.6)))
     (set-face-attribute (car face) nil :font "Iosevka Nerd Font" :weight 'bold :height (cdr face)))
 
+(use-package visual-fill-column
+  :config
+  (setq-default visual-fill-column-center-text t)
+  (setq-default visual-fill-column-width 100))
+(add-hook 'visual-line-mode-hook #'visual-fill-column-mode)
+(advice-add 'text-scale-adjust :after #'visual-fill-column-adjust)
+
 (use-package org-bullets
   :after org
   :hook (org-mode . org-bullets-mode)
@@ -265,18 +279,48 @@
   (add-to-list 'ispell-skip-region-alist '("^#\\+BEGIN_SRC" . "^#\\+END_SRC")))
 (add-hook 'org-mode-hook #'my_config/org-ispell)
 
-(setq org-highlight-latex-and-related '(latex script entities))
+(setq org-highlight-latex-and-related '(latex script entities native))
+;; (add-to-list 'org-latex-packages-alist '("" "amsmath" t))
+;; (add-to-list 'org-latex-packages-alist '("" "amssymb" t))
 
+(require 'ox-latex)
+(require 'ob-latex)
+(require 'org-tempo)
+(with-eval-after-load 'ox-latex
+   (add-to-list 'org-latex-classes
+                '("report"
+                  "\\documentclass{report}"
+                  ("\\chapter{%s}" . "\\chapter*{%s}")
+                  ("\\section{%s}" . "\\section*{%s}")
+                  ("\\subsection{%s}" . "\\subsection*{%s}")
+                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))))
 (dolist (hook '(text-mode-hook))
   (add-hook hook (lambda () (flyspell-mode 1))))
+
+(setq org-format-latex-options (plist-put org-format-latex-options :scale 3.0))
+
+(org-babel-do-load-languages
+  'org-babel-load-languages
+  '((emacs-lisp . t)
+    (latex . t)
+    (C . t)
+    (java . t)
+    (shell . t)
+    (lua . t)
+    (python . t)))
+
+(setq org-confirm-babel-evaluate nil)
+
+(add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+(add-to-list 'org-structure-template-alist '("py" . "src python"))
+
 ;; (use-package org-appear
-;;   :hook (org-mode . org-appear-mode)
 ;;   :config
 ;;   (setq org-appear-autoemphasis t
 ;;         org-appear-autosubmarkers t
-;;         org-appear-autolinks nil))
-  ;; for proper first-time setup, `org-appear--set-elements'
-  ;; needs to be run after other hooks have acted.
+;;         org-appear-autolinks t))
+;; (add-hook 'org-mode-hook 'org-appear-mode)
 
 ;; (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
 ;; (set-face-attribute 'org-block-begin-line nil :foreground nil :inherit 'fixed-pitch)
@@ -289,12 +333,5 @@
 ;; (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
 ;; (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)
 
-(use-package visual-fill-column
-  :config
-  (setq-default visual-fill-column-center-text t)
-  (setq-default visual-fill-column-width 100))
 
-
-(add-hook 'visual-line-mode-hook #'visual-fill-column-mode)
-(advice-add 'text-scale-adjust :after #'visual-fill-column-adjust)
 (put 'dired-find-alternate-file 'disabled nil)
