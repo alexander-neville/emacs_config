@@ -50,7 +50,7 @@
 (global-auto-revert-mode 1)
 (setq global-auto-revert-non-file-buffers t)
 (setq x-select-enable-clipboard nil)
-(setq header-line-format " ")
+;; (setq header-line-format " ")
 
 ; package repository initialisation
 (require 'package)
@@ -185,6 +185,9 @@
   (evil-set-initial-state 'messages-buffer-mode 'normal)
   (evil-set-initial-state 'dashboard-mode 'normal))
 
+(with-eval-after-load 'evil-maps
+  (define-key evil-motion-state-map (kbd "RET") nil))
+
 (use-package evil-collection
   :after evil
   :config
@@ -214,7 +217,9 @@
   ;; org
   "or" 'org-mode-restart
   "op" 'org-latex-preview
-  )
+  "otl" 'org-toggle-link-display
+  "oti" 'org-toggle-inline-images
+)
 
 (use-package which-key
   :init (which-key-mode)
@@ -228,6 +233,7 @@
   (auto-fill-mode 0)
   (visual-line-mode 1)
   (setq org-hide-emphasis-markers nil
+	org-return-follows-link  t
 	org-list-allow-alphabetical t
 	org-catch-invisible-edits 'smart
 	org-export-with-sub-superscripts '{}
@@ -278,14 +284,25 @@
   (add-to-list 'ispell-skip-region-alist '("=" "="))
   (add-to-list 'ispell-skip-region-alist '("^#\\+BEGIN_SRC" . "^#\\+END_SRC")))
 (add-hook 'org-mode-hook #'my_config/org-ispell)
+(dolist (hook '(text-mode-hook))
+  (add-hook hook (lambda () (flyspell-mode 1))))
 
+(setq org-link-frame-setup
+ '((vm . vm-visit-folder-other-frame)
+   (vm-imap . vm-visit-imap-folder-other-frame)
+   (gnus . org-gnus-no-new-news)
+   (file . find-file)
+   (wl . wl-other-frame)))
+(setq org-descriptive-links nil)
 (setq org-highlight-latex-and-related '(latex script entities native))
-;; (add-to-list 'org-latex-packages-alist '("" "amsmath" t))
-;; (add-to-list 'org-latex-packages-alist '("" "amssymb" t))
+(setq org-format-latex-options (plist-put org-format-latex-options :scale 3.0))
 
 (require 'ox-latex)
-(require 'ob-latex)
-(require 'org-tempo)
+(require 'ox-publish)
+(setq org-latex-listings 'minted)
+(add-to-list 'org-latex-packages-alist '("" "minted" t))
+;; (add-to-list 'org-latex-packages-alist '("" "amsmath" t))
+;; (add-to-list 'org-latex-packages-alist '("" "amssymb" t))
 (with-eval-after-load 'ox-latex
    (add-to-list 'org-latex-classes
                 '("report"
@@ -294,11 +311,9 @@
                   ("\\section{%s}" . "\\section*{%s}")
                   ("\\subsection{%s}" . "\\subsection*{%s}")
                   ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))))
-(dolist (hook '(text-mode-hook))
-  (add-hook hook (lambda () (flyspell-mode 1))))
 
-(setq org-format-latex-options (plist-put org-format-latex-options :scale 3.0))
-
+(require 'ob-latex)
+(setq org-confirm-babel-evaluate nil)
 (org-babel-do-load-languages
   'org-babel-load-languages
   '((emacs-lisp . t)
@@ -309,8 +324,7 @@
     (lua . t)
     (python . t)))
 
-(setq org-confirm-babel-evaluate nil)
-
+(require 'org-tempo)
 (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
 (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
 (add-to-list 'org-structure-template-alist '("py" . "src python"))
@@ -332,6 +346,5 @@
 ;; (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
 ;; (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
 ;; (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)
-
 
 (put 'dired-find-alternate-file 'disabled nil)
