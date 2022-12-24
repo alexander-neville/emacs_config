@@ -93,7 +93,7 @@
   (setq doom-themes-enable-bold t
         doom-themes-enable-italic t)
   (doom-themes-org-config)
-  (load-theme 'doom-one t))
+  (load-theme 'doom-dark+ t))
 
 (use-package spacemacs-common
     :ensure spacemacs-theme)
@@ -236,6 +236,7 @@
 	org-return-follows-link  t
 	org-list-allow-alphabetical t
 	org-catch-invisible-edits 'smart
+	org-use-sub-superscripts '{}
 	org-export-with-sub-superscripts '{}
         evil-auto-indent nil))
 
@@ -264,6 +265,9 @@
   (setq-default visual-fill-column-width 100))
 (add-hook 'visual-line-mode-hook #'visual-fill-column-mode)
 (advice-add 'text-scale-adjust :after #'visual-fill-column-adjust)
+
+(require 'org-src)
+(add-to-list 'org-src-block-faces '("latex" (:inherit default :extend t)))
 
 (use-package org-bullets
   :after org
@@ -300,6 +304,7 @@
 (require 'ox-latex)
 (require 'ox-publish)
 (setq org-latex-listings 'minted)
+(add-to-list 'org-latex-packages-alist '("" "minted" t))
 (add-to-list 'org-latex-packages-alist '("" "minted" t))
 ;; (add-to-list 'org-latex-packages-alist '("" "amsmath" t))
 ;; (add-to-list 'org-latex-packages-alist '("" "amssymb" t))
@@ -348,3 +353,5 @@
 ;; (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)
 
 (put 'dired-find-alternate-file 'disabled nil)
+
+(setq tex-fontify-script nil)

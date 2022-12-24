@@ -1,18 +1,29 @@
-personal_ws-1.1 en 17 
+personal_ws-1.1 en 28 
+ADT
 Cgroups
 DevOps
+Invariants
 LXC
 OCI
 Podman
+Polymorphism
 Redhat
 VM
 VMs
+Variadic
+accessor
 chroot
 cp
+dereferenced
 eg
+makefile
 mkdir
+modularity
+namespace
 namespaces
 podman
+prepending
 pseudocode
 runtimes
 src
+struct
